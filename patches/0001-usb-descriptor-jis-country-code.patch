@@ -1,0 +1,28 @@
+diff --git a/tmk_core/protocol/usb_descriptor.c b/tmk_core/protocol/usb_descriptor.c
+index ceab9eef9a..19be475451 100644
+--- a/tmk_core/protocol/usb_descriptor.c
++++ b/tmk_core/protocol/usb_descriptor.c
+@@ -571,7 +571,11 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor = {
+             .Type               = HID_DTYPE_HID
+         },
+         .HIDSpec                = VERSION_BCD(1, 1, 1),
++#ifndef USB_HID_KEYBOARD_COUNTRY_CODE
+         .CountryCode            = 0x00,
++#else
++        .CountryCode            = USB_HID_KEYBOARD_COUNTRY_CODE,
++#endif
+         .TotalReportDescriptors = 1,
+         .HIDReportType          = HID_DTYPE_Report,
+         .HIDReportLength        = sizeof(KeyboardReport)
+@@ -706,7 +710,11 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor = {
+             .Type               = HID_DTYPE_HID
+         },
+         .HIDSpec                = VERSION_BCD(1, 1, 1),
++#ifndef USB_HID_KEYBOARD_COUNTRY_CODE
+         .CountryCode            = 0x00,
++#else
++        .CountryCode            = USB_HID_KEYBOARD_COUNTRY_CODE,
++#endif
+         .TotalReportDescriptors = 1,
+         .HIDReportType          = HID_DTYPE_Report,
+         .HIDReportLength        = sizeof(SharedReport)

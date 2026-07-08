@@ -1,0 +1,28 @@
+diff --git a/quantum/pointing_device/pointing_device_auto_mouse.c b/quantum/pointing_device/pointing_device_auto_mouse.c
+index 250351f608..60a8fd1304 100644
+--- a/quantum/pointing_device/pointing_device_auto_mouse.c
++++ b/quantum/pointing_device/pointing_device_auto_mouse.c
+@@ -24,6 +24,14 @@
+ #    include "action_util.h"
+ #    include "quantum_keycodes.h"
+ 
++// しきい値をランタイム変更可能にする（keyball web_configurator用）
++#    ifdef KEYBALL_AML_THRESHOLD_RUNTIME
++extern uint8_t kb_aml_threshold;
++#        define KB_AML_TH kb_aml_threshold
++#    else
++#        define KB_AML_TH AUTO_MOUSE_THRESHOLD
++#    endif
++
+ /* local data structure for tracking auto mouse */
+ static auto_mouse_context_t auto_mouse_context = {
+     .config.layer    = (uint8_t)(AUTO_MOUSE_DEFAULT_LAYER),
+@@ -240,7 +248,7 @@ __attribute__((weak)) bool auto_mouse_activation(report_mouse_t mouse_report) {
+     auto_mouse_context.total_mouse_movement.y += mouse_report.y;
+     auto_mouse_context.total_mouse_movement.h += mouse_report.h;
+     auto_mouse_context.total_mouse_movement.v += mouse_report.v;
+-    return abs(auto_mouse_context.total_mouse_movement.x) > AUTO_MOUSE_THRESHOLD || abs(auto_mouse_context.total_mouse_movement.y) > AUTO_MOUSE_THRESHOLD || abs(auto_mouse_context.total_mouse_movement.h) > AUTO_MOUSE_THRESHOLD || abs(auto_mouse_context.total_mouse_movement.v) > AUTO_MOUSE_THRESHOLD || mouse_report.buttons;
++    return abs(auto_mouse_context.total_mouse_movement.x) > KB_AML_TH || abs(auto_mouse_context.total_mouse_movement.y) > KB_AML_TH || abs(auto_mouse_context.total_mouse_movement.h) > KB_AML_TH || abs(auto_mouse_context.total_mouse_movement.v) > KB_AML_TH || mouse_report.buttons;
+ }
+ 
+ /**
