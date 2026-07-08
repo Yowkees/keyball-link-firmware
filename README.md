@@ -1,6 +1,6 @@
 # Keyball Link Firmware
 
-[Keyball Link](https://github.com/ineno771/keyball-link)（Keyball用Webキーマップ設定ツール）専用ファームウェアのソースコードです。
+[Keyball Link](https://github.com/Yowkees/keyball-link)（Keyball用Webキーマップ設定ツール）専用ファームウェアのソースコードです。
 Keyball39 / 44 / 61 に対応しています。
 
 [QMK Firmware](https://github.com/qmk/qmk_firmware) と [Yowkees/keyball](https://github.com/Yowkees/keyball) をベースに、
