@@ -22,6 +22,9 @@ static uint8_t  g_gesture_tap_kc  = 0;      // タップ時に送る基本キー
 static uint16_t g_gesture_timer   = 0;      // 押下時刻（ホールド判定用）
 static int16_t  g_gesture_acc_x   = 0;
 static int16_t  g_gesture_acc_y   = 0;
+static bool     g_gesture_cooldown = false;  // 発火直後は次の発火まで待つ（1スイング1回に制限）
+static uint16_t g_gesture_cd_timer = 0;
+#define GST_COOLDOWN_MS 350  // クールダウン時間(ms)
 #endif
 
 // clang-format off
@@ -85,6 +88,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             uint8_t tk = kb_settings_get().gesture_tap;
             g_gesture_acc_x = 0;
             g_gesture_acc_y = 0;
+            g_gesture_cooldown = false;
             if (tk == 0) {
                 // タップキー未設定 → 従来通りホールド専用
                 g_gesture_active  = true;
@@ -103,6 +107,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             g_gesture_pending = false;
             g_gesture_acc_x   = 0;
             g_gesture_acc_y   = 0;
+            g_gesture_cooldown = false;
         }
         return false;
     }
@@ -126,6 +131,7 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     if (!g_gesture_layer_on && !g_gesture_active && !g_gesture_pending) {
         g_gesture_acc_x = 0;
         g_gesture_acc_y = 0;
+        g_gesture_cooldown = false;
     }
 #endif
     return state;
@@ -251,11 +257,24 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
         return mouse_report;
     }
     if (g_gesture_active || g_gesture_layer_on) {
+        if (g_gesture_cooldown) {
+            // 発火直後のクールダウン中は溜め込まない（1スイングで連続発火しない）
+            if (timer_elapsed(g_gesture_cd_timer) > GST_COOLDOWN_MS) {
+                g_gesture_cooldown = false;
+            } else {
+                g_gesture_acc_x = 0;
+                g_gesture_acc_y = 0;
+                mouse_report.x = 0;
+                mouse_report.y = 0;
+                return mouse_report;
+            }
+        }
         g_gesture_acc_x += mouse_report.x;
         g_gesture_acc_y += mouse_report.y;
-        const int16_t GST_TH = 50;  // 発動しきい値（移動量）
-        if (g_gesture_acc_x > GST_TH || g_gesture_acc_x < -GST_TH ||
-            g_gesture_acc_y > GST_TH || g_gesture_acc_y < -GST_TH) {
+        uint8_t th_h = kb_gesture_th_h_get();  // 横方向（左右）のしきい値
+        uint8_t th_v = kb_gesture_th_v_get();  // 縦方向（上下）のしきい値
+        if (g_gesture_acc_x > th_h || g_gesture_acc_x < -th_h ||
+            g_gesture_acc_y > th_v || g_gesture_acc_y < -th_v) {
             int16_t ax = g_gesture_acc_x < 0 ? -g_gesture_acc_x : g_gesture_acc_x;
             int16_t ay = g_gesture_acc_y < 0 ? -g_gesture_acc_y : g_gesture_acc_y;
             kb_settings_t gs = kb_settings_get();
@@ -265,6 +284,8 @@ report_mouse_t pointing_device_task_user(report_mouse_t mouse_report) {
             if (kc) tap_code16(kc);
             g_gesture_acc_x = 0;
             g_gesture_acc_y = 0;
+            g_gesture_cooldown = true;
+            g_gesture_cd_timer = timer_read();
         }
         mouse_report.x = 0;  // ジェスチャー中はカーソルを動かさない
         mouse_report.y = 0;

@@ -84,4 +84,41 @@ void kb_gesture_layer_set(uint8_t v) {
     g_gesture_loaded = true;
     eeprom_write_byte((uint8_t *)(uintptr_t)KB_GESTURE_LAYER_EEPROM, g_gesture_layer);
 }
+
+// ── ジェスチャーしきい値（横・縦、同上パターン）────────────────────────
+static uint8_t g_gesture_th_h        = 0xEE;
+static bool    g_gesture_th_h_loaded = false;
+
+uint8_t kb_gesture_th_h_get(void) {
+    if (!g_gesture_th_h_loaded) {
+        uint8_t v = eeprom_read_byte((const uint8_t *)(uintptr_t)KB_GESTURE_TH_H_EEPROM);
+        g_gesture_th_h = (v >= KB_GESTURE_TH_MIN && v <= KB_GESTURE_TH_MAX) ? v : KB_GESTURE_TH_DEFAULT;
+        g_gesture_th_h_loaded = true;
+    }
+    return g_gesture_th_h;
+}
+
+void kb_gesture_th_h_set(uint8_t v) {
+    g_gesture_th_h = (v >= KB_GESTURE_TH_MIN && v <= KB_GESTURE_TH_MAX) ? v : KB_GESTURE_TH_DEFAULT;
+    g_gesture_th_h_loaded = true;
+    eeprom_write_byte((uint8_t *)(uintptr_t)KB_GESTURE_TH_H_EEPROM, g_gesture_th_h);
+}
+
+static uint8_t g_gesture_th_v        = 0xEE;
+static bool    g_gesture_th_v_loaded = false;
+
+uint8_t kb_gesture_th_v_get(void) {
+    if (!g_gesture_th_v_loaded) {
+        uint8_t v = eeprom_read_byte((const uint8_t *)(uintptr_t)KB_GESTURE_TH_V_EEPROM);
+        g_gesture_th_v = (v >= KB_GESTURE_TH_MIN && v <= KB_GESTURE_TH_MAX) ? v : KB_GESTURE_TH_DEFAULT;
+        g_gesture_th_v_loaded = true;
+    }
+    return g_gesture_th_v;
+}
+
+void kb_gesture_th_v_set(uint8_t v) {
+    g_gesture_th_v = (v >= KB_GESTURE_TH_MIN && v <= KB_GESTURE_TH_MAX) ? v : KB_GESTURE_TH_DEFAULT;
+    g_gesture_th_v_loaded = true;
+    eeprom_write_byte((uint8_t *)(uintptr_t)KB_GESTURE_TH_V_EEPROM, g_gesture_th_v);
+}
 #endif

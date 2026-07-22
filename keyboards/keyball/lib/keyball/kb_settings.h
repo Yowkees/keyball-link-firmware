@@ -43,6 +43,8 @@ void kb_settings_set(const kb_settings_t *s);
 //    空き領域 0x03E0- に格納。マクロ領域は 0x0250-0x03DF なので衝突しない）──
 #define KB_SCROLL_LAYER_EEPROM   0x03E0  // スクロールレイヤー保存先
 #define KB_GESTURE_LAYER_EEPROM  0x03E1  // ジェスチャーレイヤー保存先
+#define KB_GESTURE_TH_H_EEPROM  0x03E2  // ジェスチャー横方向しきい値保存先
+#define KB_GESTURE_TH_V_EEPROM  0x03E3  // ジェスチャー縦方向しきい値保存先
 #define KB_LAYER_NONE            0xFE    // 「なし」を表す値（0xFF=未初期化と区別）
 
 // スクロールレイヤー（0-7=そのレイヤーでスクロール / KB_LAYER_NONE=無効。既定3）
@@ -53,4 +55,14 @@ void    kb_scroll_layer_set(uint8_t v);
 // ジェスチャーレイヤー（0-7=そのレイヤーでジェスチャー / KB_LAYER_NONE=なし。既定なし）
 uint8_t kb_gesture_layer_get(void);
 void    kb_gesture_layer_set(uint8_t v);
+
+// ジェスチャー発動しきい値（移動量の累積。小さいほど敏感。既定50、範囲10-200）
+// 横方向(左右)・縦方向(上下)を別々に持つ。指の動かし方の癖に合わせて片方だけ調整できる。
+#define KB_GESTURE_TH_DEFAULT 50
+#define KB_GESTURE_TH_MIN     10
+#define KB_GESTURE_TH_MAX     200
+uint8_t kb_gesture_th_h_get(void);
+void    kb_gesture_th_h_set(uint8_t v);
+uint8_t kb_gesture_th_v_get(void);
+void    kb_gesture_th_v_set(uint8_t v);
 #endif

@@ -323,7 +323,8 @@ void kb_hid_receive(uint8_t *data, uint8_t length) {
 
 #ifdef GESTURE_ENABLE
         // 0x15: ジェスチャー設定を返す
-        // 応答: [cmd, up_hi,up_lo, down_hi,down_lo, left_hi,left_lo, right_hi,right_lo, status, tap]
+        // 応答: [cmd, up_hi,up_lo, down_hi,down_lo, left_hi,left_lo, right_hi,right_lo,
+        //        status, tap, layer, th_h, th_v]
         case KB_HID_CMD_GET_GESTURE: {
             kb_settings_t s = kb_settings_get();
             for (uint8_t i = 0; i < 4; i++) {
@@ -333,11 +334,14 @@ void kb_hid_receive(uint8_t *data, uint8_t length) {
             response[9]  = KB_HID_STATUS_OK;
             response[10] = s.gesture_tap;          // タップ時の基本キーコード（0=なし）
             response[11] = kb_gesture_layer_get(); // ジェスチャーレイヤー（0-7 / 0xFE=なし）
+            response[12] = kb_gesture_th_h_get();  // 横方向しきい値
+            response[13] = kb_gesture_th_v_get();  // 縦方向しきい値
             break;
         }
 
         // 0x16: ジェスチャー設定を変更してEEPROMに保存
-        // 要求: [cmd, up_hi,up_lo, down_hi,down_lo, left_hi,left_lo, right_hi,right_lo, tap]
+        // 要求: [cmd, up_hi,up_lo, down_hi,down_lo, left_hi,left_lo, right_hi,right_lo,
+        //        tap, layer, th_h, th_v]
         case KB_HID_CMD_SET_GESTURE: {
             kb_settings_t s = kb_settings_get();
             for (uint8_t i = 0; i < 4; i++) {
@@ -346,6 +350,8 @@ void kb_hid_receive(uint8_t *data, uint8_t length) {
             s.gesture_tap = data[9];  // タップ時の基本キーコード（0=なし）
             kb_settings_set(&s);
             kb_gesture_layer_set(data[10]);  // ジェスチャーレイヤー（0-7 / 0xFE=なし）
+            kb_gesture_th_h_set(data[11]);   // 横方向しきい値
+            kb_gesture_th_v_set(data[12]);   // 縦方向しきい値
             response[1] = KB_HID_STATUS_OK;
             break;
         }
