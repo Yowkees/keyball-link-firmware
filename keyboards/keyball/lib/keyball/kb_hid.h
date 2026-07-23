@@ -28,6 +28,7 @@
 #define KB_HID_CMD_SET_MACRO      0x14  // マクロ設定: [cmd,slot,count,kc×6] → [cmd,status]
 #define KB_HID_CMD_GET_GESTURE    0x15  // ジェスチャー設定取得（GESTURE_ENABLE時のみ応答）
 #define KB_HID_CMD_SET_GESTURE    0x16  // ジェスチャー設定変更（GESTURE_ENABLE時のみ応答）
+#define KB_HID_CMD_GET_VERSION    0x17  // ファームウェアのバージョン取得（major.minor.patch）
 
 // ステータスコード
 #define KB_HID_STATUS_OK    0x00

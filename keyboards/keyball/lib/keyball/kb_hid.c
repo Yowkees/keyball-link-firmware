@@ -12,6 +12,7 @@
 #endif
 #include "kb_settings.h"
 #include "kb_macro.h"
+#include "kb_version.h"
 #ifdef POINTING_DEVICE_AUTO_MOUSE_ENABLE
 #    include "pointing_device_auto_mouse.h"
 #endif
@@ -356,6 +357,16 @@ void kb_hid_receive(uint8_t *data, uint8_t length) {
             break;
         }
 #endif // GESTURE_ENABLE
+
+        // 0x17: ファームウェアのバージョンを返す（全機種・全バージョン共通で応答）
+        // 応答: [cmd, major, minor, patch, status]
+        case KB_HID_CMD_GET_VERSION: {
+            response[1] = KB_FW_VERSION_MAJOR;
+            response[2] = KB_FW_VERSION_MINOR;
+            response[3] = KB_FW_VERSION_PATCH;
+            response[4] = KB_HID_STATUS_OK;
+            break;
+        }
 
         // 0x07: ブートローダーへジャンプ（ファームウェア書き込み用）
         // 応答を送信してから 500ms 後にリセット
