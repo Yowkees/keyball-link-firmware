@@ -11,7 +11,9 @@
 #    include "td_config.h"
 #endif
 #include "kb_settings.h"
+#ifndef LED_VERSION_BUILD
 #include "kb_macro.h"
+#endif
 #include "kb_version.h"
 #ifdef POINTING_DEVICE_AUTO_MOUSE_ENABLE
 #    include "pointing_device_auto_mouse.h"
@@ -412,6 +414,7 @@ void kb_hid_receive(uint8_t *data, uint8_t length) {
             break;
         }
 
+#ifndef LED_VERSION_BUILD
         // 0x13: マクロバッファの一部を返す（VIA方式）
         // 要求: [cmd, offset_hi, offset_lo]
         // 応答: [cmd, offset_hi, offset_lo, data×28, status]
@@ -434,6 +437,7 @@ void kb_hid_receive(uint8_t *data, uint8_t length) {
             response[1] = KB_HID_STATUS_OK;
             break;
         }
+#endif // LED_VERSION_BUILD
 
         default:
             response[0] = 0xFF;

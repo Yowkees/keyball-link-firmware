@@ -6,7 +6,9 @@
 #include "lib/keyball/kb_hid.h"
 #include "lib/keyball/td_config.h"
 #include "lib/keyball/kb_settings.h"
+#ifndef LED_VERSION_BUILD
 #include "lib/keyball/kb_macro.h"
+#endif
 
 #ifdef KEYBALL_AML_THRESHOLD_RUNTIME
 extern uint8_t kb_aml_threshold;
@@ -104,6 +106,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         return false;
     }
 #endif
+#ifndef LED_VERSION_BUILD
     if (keycode >= QK_MACRO && keycode <= QK_MACRO_MAX) {
         if (record->event.pressed) {
             kb_macro_play(keycode - QK_MACRO);   // タップ実行＋ホールド開始
@@ -112,6 +115,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         }
         return false;
     }
+#endif
     return true;
 }
 

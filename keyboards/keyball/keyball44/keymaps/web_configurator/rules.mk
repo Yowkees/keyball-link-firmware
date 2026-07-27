@@ -14,14 +14,15 @@ MOUSEKEY_ENABLE = yes
 OLED_ENABLE = yes
 
 RGB_MATRIX_ENABLE = no
-# LED_VERSION=yes でビルドするとLED有効・メディアキー無効・一部機能削減版になる
-# 通常版（指定なし）はメディアキー有効・LED無効
+# LED_VERSION=yes でビルドするとLED有効・メディアキー有効・マクロ無効の構成になる
+# 通常版（指定なし）はメディアキー有効・LED無効・マクロ有効
 ifeq ($(strip $(LED_VERSION)),yes)
     RGBLIGHT_ENABLE = yes
-    EXTRAKEY_ENABLE = no
+    EXTRAKEY_ENABLE = yes
     OPT_DEFS += -DLED_VERSION_BUILD
 else
     RGBLIGHT_ENABLE = no
+    EXTRAKEY_ENABLE = yes
     OPT_DEFS += -DGESTURE_ENABLE
 endif
 
@@ -34,4 +35,6 @@ endif
 # HIDハンドラ・タップダンス設定・詳細設定をビルドに含める
 SRC += lib/keyball/kb_hid.c
 SRC += lib/keyball/kb_settings.c
-SRC += lib/keyball/kb_macro.c
+ifneq ($(strip $(LED_VERSION)),yes)
+    SRC += lib/keyball/kb_macro.c
+endif
