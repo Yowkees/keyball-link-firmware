@@ -27,10 +27,8 @@
 
 // 詳細設定: per-key オーバーライド（LED版では容量確保のため簡略化）
 #define TAPPING_TERM           200
-#ifndef LED_VERSION_BUILD
 #define TAPPING_TERM_PER_KEY
 #define PERMISSIVE_HOLD_PER_KEY
-#endif
 
 // 使用するRGBLIGHTエフェクトのみ有効化（フラッシュ節約）
 #define RGBLIGHT_EFFECT_BREATHING

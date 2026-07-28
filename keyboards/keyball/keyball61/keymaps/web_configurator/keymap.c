@@ -218,7 +218,6 @@ void keyboard_post_init_user(void) {
     (void)s;
 }
 
-#ifndef LED_VERSION_BUILD
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     uint16_t tt = kb_settings_get().tapping_term;
     return (tt >= 50 && tt <= 1000) ? tt : TAPPING_TERM;
@@ -227,7 +226,6 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
 bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
     return (kb_settings_get().flags & KB_FLAG_PERMISSIVE_HOLD) != 0;
 }
-#endif
 
 #ifdef GESTURE_ENABLE
 // ホールド判定: 兼用キーを押しっぱなしが Tapping Term を超えたらジェスチャー確定
