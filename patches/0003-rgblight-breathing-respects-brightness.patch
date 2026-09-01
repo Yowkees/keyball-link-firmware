@@ -1,8 +1,20 @@
 diff --git a/quantum/rgblight/rgblight.c b/quantum/rgblight/rgblight.c
-index bfccb472b5..2ed0655d77 100644
+index bfccb472b5..eeb185538d 100644
 --- a/quantum/rgblight/rgblight.c
 +++ b/quantum/rgblight/rgblight.c
-@@ -1134,6 +1134,11 @@ __attribute__((weak)) const uint8_t RGBLED_BREATHING_INTERVALS[] PROGMEM = {30,
+@@ -523,8 +523,9 @@ void rgblight_sethsv_eeprom_helper(uint8_t hue, uint8_t sat, uint8_t val, bool w
+             }
+ #ifdef RGBLIGHT_EFFECT_BREATHING
+             else if (rgblight_status.base_mode == RGBLIGHT_MODE_BREATHING) {
+-                // breathing mode, ignore the change of val, use in memory value instead
+-                val = rgblight_config.val;
++                // keyball: 標準のQMKはここで新しいvalを握りつぶして呼吸のピーク輝度を
++                // 変更不可にしていたが、明るさ調整を効かせたいのでそのまま受け入れる
++                // （実際のピーク描画側は rgblight_effect_breathing 内で対応済み）
+             }
+ #endif
+ #ifdef RGBLIGHT_EFFECT_RAINBOW_MOOD
+@@ -1134,6 +1135,11 @@ __attribute__((weak)) const uint8_t RGBLED_BREATHING_INTERVALS[] PROGMEM = {30,
  
  void rgblight_effect_breathing(animation_status_t *anim) {
      uint8_t val = breathe_calc(anim->pos);
