@@ -51,10 +51,13 @@ void kb_settings_set(const kb_settings_t *s);
 // 書き込まれているかを示すマジックナンバー。値の範囲チェックだけでは「たまたま
 // 範囲内に見える別データ」を正規の設定として誤読する恐れがあるため、実体を持つ
 // 目印として置く。フォーマット（構造体レイアウトや既定値の意味）を変えたら
-// KB_SETTINGS_MAGIC_VALUE を必ず変更すること（変更すると次回起動時に全設定が
+// KB_SETTINGS_MAGIC_VALUE_1/2 を必ず変更すること（変更すると次回起動時に全設定が
 // 既定値へ自動リセットされる）。
-#define KB_SETTINGS_MAGIC_EEPROM 0x03FF
-#define KB_SETTINGS_MAGIC_VALUE  0x01
+// 2バイトにしているのは、1バイトだと旧ファーム等の残存データが偶然同じ値に
+// なる確率が1/256あり、実機でその誤判定が実際に起きたため（1/65536に低減）。
+#define KB_SETTINGS_MAGIC_EEPROM   0x03FE  // 0x03FE-0x03FF の2バイトを使う
+#define KB_SETTINGS_MAGIC_VALUE_1  0x4B    // 'K'
+#define KB_SETTINGS_MAGIC_VALUE_2  0xA5    // 単純な連番ではなく偶然一致しにくい値にする
 
 // マジックナンバーが一致しない（未初期化・別フォーマット・データ破損）場合に、
 // 本ファイルが管理する設定全部（kb_settings本体・スクロールレイヤー・ジェス

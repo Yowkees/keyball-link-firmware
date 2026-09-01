@@ -13,6 +13,7 @@ Webブラウザ（WebHID）からキーマップ・各種設定を書き換え�
 | `keyboards/keyball/` | keyball一式（`keymaps/web_configurator` が本ファームのキーマップ） |
 | `patches/0001-usb-descriptor-jis-country-code.patch` | QMK本体修正: USBディスクリプタの国コードをJIS(15)に設定（macOSでJIS配列と認識させる） |
 | `patches/0002-auto-mouse-runtime-threshold.patch` | QMK本体修正: 自動マウスレイヤーのしきい値を実行時に変更可能にする |
+| `patches/0003-rgblight-breathing-respects-brightness.patch` | QMK本体修正: RGBLIGHTの「呼吸」エフェクトが明るさ設定(val)を無視して常に固定の最大輝度で光る仕様だったのを、明るさ設定に応じてピーク輝度も下がるように修正 |
 
 ## ビルド方法
 

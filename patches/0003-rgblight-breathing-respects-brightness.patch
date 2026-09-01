@@ -1,0 +1,16 @@
+diff --git a/quantum/rgblight/rgblight.c b/quantum/rgblight/rgblight.c
+index bfccb472b5..2ed0655d77 100644
+--- a/quantum/rgblight/rgblight.c
++++ b/quantum/rgblight/rgblight.c
+@@ -1134,6 +1134,11 @@ __attribute__((weak)) const uint8_t RGBLED_BREATHING_INTERVALS[] PROGMEM = {30,
+ 
+ void rgblight_effect_breathing(animation_status_t *anim) {
+     uint8_t val = breathe_calc(anim->pos);
++    // keyball: ユーザーが設定した明るさ(val)を上限として反映する。
++    // 標準のQMKは呼吸のピーク輝度が常に固定(RGBLIGHT_LIMIT_VAL)で、
++    // ユーザーの明るさ設定を無視していたため、電源ノイズによるOLED表示崩れを
++    // 軽減できるよう明るさスライダーで呼吸のピークも下げられるようにする。
++    val = (uint16_t)val * rgblight_config.val / 255;
+     rgblight_sethsv_noeeprom_old(rgblight_config.hue, rgblight_config.sat, val);
+     anim->pos = (anim->pos + 1);
+ }
