@@ -5,5 +5,5 @@
 // Keyball Link ファームウェアのリリースバージョン（セマンティックバージョニング）。
 // 39/44/61・通常版/LED版すべて共通の番号。新しい機能追加・修正でhexを作り直すたびに更新する。
 #define KB_FW_VERSION_MAJOR 1
-#define KB_FW_VERSION_MINOR 2
+#define KB_FW_VERSION_MINOR 3
 #define KB_FW_VERSION_PATCH 0
