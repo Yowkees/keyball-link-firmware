@@ -199,6 +199,26 @@ void keyball_on_apply_motion_to_mouse_move(keyball_motion_t *m, report_mouse_t *
     m->x = 0;
     m->y = 0;
 }
+#else
+// LED版用の軽量な向き補正のみ(EMAフィルタ・加速度カーブは容量の都合で省略)。
+// ライブラリ既定の向き補正(is_left基準)ではこの基板で逆向きになることが実機確認で
+// 判明したため、通常版と同じ向き補正(!is_left基準)に揃える。
+static inline int8_t clip2int8_led(int16_t v) {
+    return (v) < -127 ? -127 : (v) > 127 ? 127 : (int8_t)v;
+}
+
+void keyball_on_apply_motion_to_mouse_move(keyball_motion_t *m, report_mouse_t *r, bool is_left) {
+    int16_t dx = m->y;
+    int16_t dy = m->x;
+    if (!is_left) {
+        dx = -dx;
+        dy = -dy;
+    }
+    r->x = clip2int8_led(dx);
+    r->y = clip2int8_led(dy);
+    m->x = 0;
+    m->y = 0;
+}
 #endif
 
 void keyboard_post_init_user(void) {
