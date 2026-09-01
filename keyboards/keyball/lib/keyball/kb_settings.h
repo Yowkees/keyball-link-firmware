@@ -47,7 +47,23 @@ void kb_settings_set(const kb_settings_t *s);
 #define KB_GESTURE_TH_V_EEPROM  0x03E3  // ジェスチャー縦方向しきい値保存先
 #define KB_LAYER_NONE            0xFE    // 「なし」を表す値（0xFF=未初期化と区別）
 
-// スクロールレイヤー（0-7=そのレイヤーでスクロール / KB_LAYER_NONE=無効。既定3）
+// カスタム設定全体（本ファイルが管理する全EEPROM領域）が正しいフォーマットで
+// 書き込まれているかを示すマジックナンバー。値の範囲チェックだけでは「たまたま
+// 範囲内に見える別データ」を正規の設定として誤読する恐れがあるため、実体を持つ
+// 目印として置く。フォーマット（構造体レイアウトや既定値の意味）を変えたら
+// KB_SETTINGS_MAGIC_VALUE を必ず変更すること（変更すると次回起動時に全設定が
+// 既定値へ自動リセットされる）。
+#define KB_SETTINGS_MAGIC_EEPROM 0x03FF
+#define KB_SETTINGS_MAGIC_VALUE  0x01
+
+// マジックナンバーが一致しない（未初期化・別フォーマット・データ破損）場合に、
+// 本ファイルが管理する設定全部（kb_settings本体・スクロールレイヤー・ジェス
+// チャー関連）を安全な既定値へ強制的に書き戻す。通常は各getterが初回アクセス時に
+// 自動で呼び出すため明示的に呼ぶ必要はないが、Keyball LinkからのEEPROM初期化
+// コマンド（KB_HID_CMD_RESET_KEYMAP）からも呼び出す。
+void kb_settings_reset_all(void);
+
+// スクロールレイヤー（0-7=そのレイヤーでスクロール / KB_LAYER_NONE=無効。既定3・正規ファームと同じ）
 uint8_t kb_scroll_layer_get(void);
 void    kb_scroll_layer_set(uint8_t v);
 

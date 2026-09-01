@@ -120,9 +120,20 @@ void kb_hid_receive(uint8_t *data, uint8_t length) {
         }
 
         // 0x08: キーマップをデフォルト（コンパイル済み）に戻す
+        // ＋ スクロールレイヤー・自動マウスレイヤー・ジェスチャー等のカスタム設定も
+        //   工場出荷時の既定値へ戻す（キーマップだけ戻して設定が残る事故を防ぐ）
         // 応答: [cmd, status]
+        // EE_CLRキーと同じ範囲（キー割り当て・Keyball Link独自設定・キーボード
+        // 本体組み込み設定〈CPI/スクロール分周/加速度/本体側の自動マウスレイヤー
+        // ON-OFF〉）をリセットする。
+        // 注意: EEPROM上の値は既定値に戻るが、動作中のRAM上の状態への反映は
+        // キーボードの再起動後になる（フラッシュ容量が厳しい機種があるため、
+        // ここでの即時反映処理は行わない。EE_CLR自体も本体設定については
+        // 次回起動時に反映される点は同じ）
         case KB_HID_CMD_RESET_KEYMAP: {
             dynamic_keymap_reset();
+            kb_settings_reset_all();
+            eeconfig_update_kb(0);  // CPI/スクロール分周/自動マウスレイヤー/加速度を空に戻す
             response[1] = KB_HID_STATUS_OK;
             break;
         }
