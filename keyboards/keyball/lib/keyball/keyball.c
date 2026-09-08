@@ -337,10 +337,12 @@ static void rpc_get_info_invoke(void) {
     round++;
     keyball_info_t recv = {0};
     if (!transaction_rpc_exec(KEYBALL_GET_INFO, 0, NULL, sizeof(recv), &recv)) {
-        if (round < KEYBALL_TX_GETINFO_MAXTRY) {
-            dprintf("keyball:rpc_get_info_invoke: missed #%d\n", round);
-            return;
-        }
+        // 反対側の起動がまだ間に合っていないだけの可能性があるため、応答が
+        // 得られるまで無期限にリトライする（失敗を「ボールなし」と確定させない。
+        // 以前は既定回数で諦めてnegotiated=trueにしてしまい、その後の電源投入中
+        // ずっと「反対側にボールなし」と誤認識したままになる不具合があった）。
+        dprintf("keyball:rpc_get_info_invoke: missed #%d\n", round);
+        return;
     }
     negotiated             = true;
     keyball.that_enable    = true;
@@ -619,6 +621,14 @@ void keyboard_post_init_kb(void) {
     // read keyball configuration from EEPROM
     if (eeconfig_is_enabled()) {
         keyball_config_t c = {.raw = eeconfig_read_kb()};
+        if (c.magic != KEYBALL_CONFIG_MAGIC) {
+            // 未初期化・別フォーマット・旧ファームの残存データを正規の設定として
+            // 誤読しないよう、目印(magic)不一致時は安全な既定値へリセットする
+            // （kb_settings.cと同じ考え方）。
+            c      = (keyball_config_t){0};
+            c.magic = KEYBALL_CONFIG_MAGIC;
+            eeconfig_update_kb(c.raw);
+        }
         keyball_set_cpi(c.cpi);
         keyball_set_scroll_div(c.sdiv);
 #ifdef POINTING_DEVICE_AUTO_MOUSE_ENABLE

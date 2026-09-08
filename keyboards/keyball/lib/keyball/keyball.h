@@ -74,7 +74,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Constants
 
 #define KEYBALL_TX_GETINFO_INTERVAL 500
-#define KEYBALL_TX_GETINFO_MAXTRY 10
 #define KEYBALL_TX_GETMOTION_INTERVAL 4
 
 #if (PRODUCT_ID & 0xff00) == 0x0000
@@ -140,8 +139,13 @@ typedef union {
         uint8_t ssnap : 2; // scroll snap mode
 #endif
         uint8_t accel : 4; // pointer acceleration (0=off, 1-10)
+        uint8_t magic : 8; // レイアウト検証用（kb_settings.cと同じ仕組み）。
+                            // フィールドを追加・変更したら必ず値を変える。
     };
 } keyball_config_t;
+
+// 単純な連番ではなく偶然一致しにくい値にする（kb_settings.cのMAGIC_VALUEと同様の考え方）
+#define KEYBALL_CONFIG_MAGIC 0x5B
 
 typedef struct {
     uint8_t ballcnt; // count of balls: support only 0 or 1, for now

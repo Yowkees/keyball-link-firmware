@@ -133,7 +133,11 @@ void kb_hid_receive(uint8_t *data, uint8_t length) {
         case KB_HID_CMD_RESET_KEYMAP: {
             dynamic_keymap_reset();
             kb_settings_reset_all();
-            eeconfig_update_kb(0);  // CPI/スクロール分周/自動マウスレイヤー/加速度を空に戻す
+            // CPI/スクロール分周/自動マウスレイヤー/加速度を空に戻す。
+            // magicは正しい値を書いておく（次回起動時の不要な再リセットを防ぐ）。
+            keyball_config_t c = {0};
+            c.magic             = KEYBALL_CONFIG_MAGIC;
+            eeconfig_update_kb(c.raw);
             response[1] = KB_HID_STATUS_OK;
             break;
         }
