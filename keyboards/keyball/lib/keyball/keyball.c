@@ -600,6 +600,13 @@ void keyball_set_accel(uint8_t accel) {
 // Keyboard hooks
 
 void keyboard_post_init_kb(void) {
+#if defined(WS2812_DI_PIN) && !defined(RGBLIGHT_ENABLE) && !defined(RGB_MATRIX_ENABLE)
+    // LED無効ビルドではWS2812を駆動するコードが含まれずデータ線がフローティングのままになり、
+    // ノイズを誤点灯として拾ってしまうことがあるためLowに固定しておく
+    setPinOutput(WS2812_DI_PIN);
+    writePinLow(WS2812_DI_PIN);
+#endif
+
 #ifdef SPLIT_KEYBOARD
     // register transaction handlers on secondary.
     if (!is_keyboard_master()) {
