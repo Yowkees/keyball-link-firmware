@@ -118,7 +118,7 @@ enum keyball_keycodes {
     AML_TO   = QK_KB_10, // Toggle automatic mouse layer
     AML_I50  = QK_KB_11, // Increment automatic mouse layer timeout
     AML_D50  = QK_KB_12, // Decrement automatic mouse layer timeout
-    AML_OFF  = QK_KB_17, // タイムアウトを待たず自動マウスレイヤーを即座に解除
+    AML_OFF  = QK_KB_18, // タイムアウトを待たず自動マウスレイヤーを即座に解除
 
     // ジェスチャー: 押している間トラックボールを上下左右に振るとキー送出
     GST_HOLD = QK_KB_16,
