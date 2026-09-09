@@ -813,6 +813,9 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                     set_auto_mouse_timeout(MAX(v, AML_TIMEOUT_MIN));
                 }
                 break;
+            case AML_OFF:
+                auto_mouse_layer_off();
+                break;
 #endif
 
             default:
