@@ -3,9 +3,17 @@
 #pragma once
 #include <stdint.h>
 
-// TD config (0x0200-0x023F, 64 bytes) の直後に配置
-// kb_settings は 16バイト（0x0240-0x024F）。マクロ領域(0x0250)の直前まで。
+// TD config (64 bytes) の直後に配置。kb_settings は16バイト、マクロ領域の直前まで。
+// 2026-09-25: Keyball61はdynamic_keymapが0x02A5番地まで使うため、デフォルトの
+// 0x0240だとキーマップ本体（最終レイヤーの一部）と重なり、詳細設定を保存する
+// たびにキーマップが破損する不具合があった。KB_EEPROM_LAYOUT_KEYBALL61定義時は
+// dynamic_keymapの末尾より後ろに配置する（td_config.cのTD_EEPROM_BASEと対にして
+// ずらす。詳細はtd_config.cのコメント参照）。
+#ifdef KB_EEPROM_LAYOUT_KEYBALL61
+#define KB_SETTINGS_EEPROM_BASE  0x02F0
+#else
 #define KB_SETTINGS_EEPROM_BASE  0x0240
+#endif
 #define KB_SETTINGS_DEFAULT_TT   200  // デフォルト Tapping Term (ms)
 
 // ジェスチャーのデフォルト割り当て（macブラウザ標準・修飾子付きキーコード）
@@ -40,11 +48,20 @@ kb_settings_t kb_settings_get(void);
 void kb_settings_set(const kb_settings_t *s);
 
 // ── トラックボール動作レイヤー（kb_settings構造体は満杯のため、EEPROM末尾の
-//    空き領域 0x03E0- に格納。マクロ領域は 0x0250-0x03DF なので衝突しない）──
+//    空き領域に格納。マクロ領域の直後なので衝突しない）──
+// 2026-09-25: Keyball61はマクロ領域も後ろにずれる（KB_EEPROM_LAYOUT_KEYBALL61
+// 参照）ため、この4バイトの置き場所もそれに合わせてずらす。
+#ifdef KB_EEPROM_LAYOUT_KEYBALL61
+#define KB_SCROLL_LAYER_EEPROM   0x03F0  // スクロールレイヤー保存先
+#define KB_GESTURE_LAYER_EEPROM  0x03F1  // ジェスチャーレイヤー保存先
+#define KB_GESTURE_TH_H_EEPROM   0x03F2  // ジェスチャー横方向しきい値保存先
+#define KB_GESTURE_TH_V_EEPROM   0x03F3  // ジェスチャー縦方向しきい値保存先
+#else
 #define KB_SCROLL_LAYER_EEPROM   0x03E0  // スクロールレイヤー保存先
 #define KB_GESTURE_LAYER_EEPROM  0x03E1  // ジェスチャーレイヤー保存先
-#define KB_GESTURE_TH_H_EEPROM  0x03E2  // ジェスチャー横方向しきい値保存先
-#define KB_GESTURE_TH_V_EEPROM  0x03E3  // ジェスチャー縦方向しきい値保存先
+#define KB_GESTURE_TH_H_EEPROM   0x03E2  // ジェスチャー横方向しきい値保存先
+#define KB_GESTURE_TH_V_EEPROM   0x03E3  // ジェスチャー縦方向しきい値保存先
+#endif
 #define KB_LAYER_NONE            0xFE    // 「なし」を表す値（0xFF=未初期化と区別）
 
 // カスタム設定全体（本ファイルが管理する全EEPROM領域）が正しいフォーマットで
@@ -55,7 +72,12 @@ void kb_settings_set(const kb_settings_t *s);
 // 既定値へ自動リセットされる）。
 // 2バイトにしているのは、1バイトだと旧ファーム等の残存データが偶然同じ値に
 // なる確率が1/256あり、実機でその誤判定が実際に起きたため（1/65536に低減）。
+// 2026-09-25: Keyball61はこの領域全体がずれる（KB_EEPROM_LAYOUT_KEYBALL61参照）
+#ifdef KB_EEPROM_LAYOUT_KEYBALL61
+#define KB_SETTINGS_MAGIC_EEPROM   0x03F4  // 0x03F4-0x03F5 の2バイトを使う
+#else
 #define KB_SETTINGS_MAGIC_EEPROM   0x03FE  // 0x03FE-0x03FF の2バイトを使う
+#endif
 #define KB_SETTINGS_MAGIC_VALUE_1  0x4B    // 'K'
 #define KB_SETTINGS_MAGIC_VALUE_2  0xA5    // 単純な連番ではなく偶然一致しにくい値にする
 

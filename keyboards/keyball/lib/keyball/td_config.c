@@ -6,8 +6,17 @@
 #include <string.h>
 
 // タップダンス設定をEEPROMの 0x0200 番地以降に保存
-// dynamic_keymap は先頭〜約 0x01C0 を使うため、0x0200 からは安全
+// dynamic_keymap は先頭〜約 0x01C0 を使うため、0x0200 からは安全…という前提だったが、
+// Keyball61はマトリクスが大きく(10行×8列)dynamic_keymapが0x02A5番地まで達するため、
+// 0x0200のままでは重なってしまう。KB_EEPROM_LAYOUT_KEYBALL61（Keyball61の
+// keymaps/web_configurator/rules.mkでOPT_DEFSとして定義）が立っていれば、
+// dynamic_keymapの末尾より後ろの0x02B0番地から確保する
+// （2026-09-25発覚のキーマップ破損不具合の修正）。
+#ifdef KB_EEPROM_LAYOUT_KEYBALL61
+#define TD_EEPROM_BASE 0x02B0
+#else
 #define TD_EEPROM_BASE 0x0200
+#endif
 
 td_slot_t td_config_get(uint8_t idx) {
     td_slot_t slot;

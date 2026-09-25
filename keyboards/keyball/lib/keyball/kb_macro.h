@@ -6,7 +6,16 @@
 
 // スロット数と共有バッファサイズ
 #define MACRO_SLOT_COUNT    10
+// 2026-09-25: Keyball61はdynamic_keymapが大きい分、マクロ領域の置き場所を
+// 後ろにずらす必要があり（kb_settings.h・td_config.c参照）、AVRのEEPROM総容量
+// 1024バイトに収めるためマクロバッファ自体も縮小する（400→240バイト）。
+// Web UI側（keyball-configurator/src/lib/protocol.ts）もこの値を機種別に
+// 把握しており、機種を変更したらそちらも合わせて更新すること。
+#ifdef KB_EEPROM_LAYOUT_KEYBALL61
+#define MACRO_BUFFER_SIZE   240   // 全スロット共有バッファ（バイト）Keyball61専用
+#else
 #define MACRO_BUFFER_SIZE   400   // 全スロット共有バッファ（バイト）
+#endif
 
 // バッファ内のアクションコード（VIA互換）
 #define MACRO_ACTION_TAP    0x01  // キーをタップ: 0x01 hi lo
