@@ -230,8 +230,13 @@ void kb_hid_receive(uint8_t *data, uint8_t length) {
         case KB_HID_CMD_GET_LED: {
             uint8_t mode = rgblight_is_enabled() ? rgblight_get_mode() : 0;
             uint8_t effect_id = 0;
-            for (uint8_t i = 1; i < LED_EFFECT_COUNT; i++) {
-                if (LED_EFFECT_MAP[i] == mode) { effect_id = i; break; }
+            // ブリージング・レインボームードは速さ違いの番号（基本番号+1〜3）も同じエフェクト扱い
+            if (mode >= RGBLIGHT_MODE_BREATHING && mode < RGBLIGHT_MODE_BREATHING + 4) {
+                effect_id = 2;
+            } else if (mode >= RGBLIGHT_MODE_RAINBOW_MOOD && mode < RGBLIGHT_MODE_RAINBOW_MOOD + 3) {
+                effect_id = 3;
+            } else if (mode == RGBLIGHT_MODE_STATIC_LIGHT) {
+                effect_id = 1;
             }
             response[1] = effect_id;
             response[2] = rgblight_get_hue();
@@ -251,7 +256,17 @@ void kb_hid_receive(uint8_t *data, uint8_t length) {
                 rgblight_disable();
             } else {
                 rgblight_enable();
-                rgblight_mode(LED_EFFECT_MAP[effect_id]);
+                // 2026-10-07: QMKのRGBLIGHT（AVR版）では、ブリージング・レインボームードの
+                // 速さは「速さ」の値ではなくモード番号（基本番号+0〜3 / +0〜2）で決まるため、
+                // Web UIの速さ（0〜255）を段階に変換してモード番号に足す（本人報告:
+                // ブリージングの速さを変えても変化しなかった）。速さの値自体も表示用に保存する。
+                uint8_t m = LED_EFFECT_MAP[effect_id];
+                if (effect_id == 2) {
+                    m += data[5] >> 6;       // 0〜255 → 0〜3（右ほど速い）
+                } else if (effect_id == 3) {
+                    m += data[5] / 86;       // 0〜255 → 0〜2
+                }
+                rgblight_mode(m);
                 rgblight_sethsv(data[2], data[3], data[4]);
                 rgblight_set_speed(data[5]);
             }
