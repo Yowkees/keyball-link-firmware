@@ -38,18 +38,15 @@ matrix_row_t matrix_mask[MATRIX_ROWS] = {
 void keyball_on_adjust_layout(keyball_adjust_t v) {
 #ifdef RGBLIGHT_ENABLE
     // adjust RGBLIGHT's clipping and effect ranges
-    uint8_t lednum_this = keyball.this_have_ball ? 22 : 24;
-    uint8_t lednum_that = !keyball.that_enable ? 0 : keyball.that_have_ball ? 22 : 24;
-    // 2026-10-07修正: 以前は右手側で clipping_start_pos を「左手のLED数」にしていたが、
-    // 今のQMKのrgblightはエフェクト範囲の全LED（0〜左右合計-1）について
-    // ws2812_set_color(index - clipping_start_pos, ...) を呼ぶため、右手側では
-    // 0〜(左手のLED数-1) の分が負数→uint8_tの大きな値になり、ws2812のバッファの外
-    // （OLEDの画面バッファなど）を毎フレーム書き換えていた。ブリージングで右手を
-    // マスターにするとOLEDの表示が乱れる、左手のLEDの一部が消えるなどの原因（本人報告）。
-    // AVR版で使えるエフェクト（ソリッド・ブリージング・レインボームード）は全LEDが同じ色の
-    // ため、左右とも先頭から数えても見た目は変わらない。常に0から数えてはみ出しを防ぐ。
-    (void)lednum_that;
-    rgblight_set_clipping_range(0, lednum_this);
-    rgblight_set_effect_range(0, lednum_this + lednum_that);
+    // 2026-10-07: 左右とも、LEDバッファ全体（左右合計の数）を書き換える範囲にする。
+    // 以前は左右・ボールの有無ごとにLEDの数と開始位置を変えていたが、
+    //  - 右手側の開始位置を「左手のLED数」にすると、今のQMKのrgblightでは書き込み先が
+    //    負数→バッファの外になり、OLEDの画面バッファなどを壊していた
+    //  - 起動直後（左右の情報交換の前）は数が確定しておらず、ソリッドなど一度しか書かない
+    //    エフェクトで一部のLEDが消えたままになっていた（本人報告: 左手の27〜29番）
+    // AVR版のエフェクト（ソリッド・ブリージング・レインボームード）は全LEDが同じ色なので、
+    // 全範囲を書いても見た目は変わらない（各基板は自分につながっている数だけ光る）。
+    rgblight_set_clipping_range(0, RGBLIGHT_LED_COUNT);
+    rgblight_set_effect_range(0, RGBLIGHT_LED_COUNT);
 #endif
 }

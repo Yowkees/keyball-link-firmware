@@ -40,8 +40,6 @@
 // LED総数を実際のハードウェア構成に合わせて上書き（右22 + 左24 = 46個）
 #undef RGBLIGHT_LED_COUNT
 #define RGBLIGHT_LED_COUNT 46
-#undef RGBLED_SPLIT
-#define RGBLED_SPLIT { 22, 24 }
 
 // 使用するエフェクトのみ有効化（フラッシュ節約）
 #define RGBLIGHT_EFFECT_BREATHING
@@ -56,3 +54,11 @@
 // 最大輝度（消費電力抑制）
 #undef RGBLIGHT_LIMIT_VAL
 #define RGBLIGHT_LIMIT_VAL 150
+
+// 2026-10-07: RGBLED_SPLITを使わず、左右の同期（RGBLIGHT_SPLIT）だけを有効にする。
+// RGBLED_SPLITがあると起動時（split_pre_init）に右手側の書き込み開始位置が
+// 「左手のLED数」にされ、LEDバッファの外を書き換えてしまうため（<board>.c参照）。
+#undef RGBLED_SPLIT
+#ifdef RGBLIGHT_ENABLE
+#    define RGBLIGHT_SPLIT
+#endif

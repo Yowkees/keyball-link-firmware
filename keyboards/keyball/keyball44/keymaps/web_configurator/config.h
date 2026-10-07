@@ -45,3 +45,11 @@
 #ifndef RGBLIGHT_LIMIT_VAL
 #    define RGBLIGHT_LIMIT_VAL 150
 #endif
+
+// 2026-10-07: RGBLED_SPLITを使わず、左右の同期（RGBLIGHT_SPLIT）だけを有効にする。
+// RGBLED_SPLITがあると起動時（split_pre_init）に右手側の書き込み開始位置が
+// 「左手のLED数」にされ、LEDバッファの外を書き換えてしまうため（<board>.c参照）。
+#undef RGBLED_SPLIT
+#ifdef RGBLIGHT_ENABLE
+#    define RGBLIGHT_SPLIT
+#endif
