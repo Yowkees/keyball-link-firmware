@@ -362,6 +362,16 @@ static void rpc_get_info_invoke(void) {
 #    endif
 
     keyball_on_adjust_layout(KEYBALL_ADJUST_PRIMARY);
+
+#    ifdef RGBLIGHT_ENABLE
+    // 2026-10-07: 起動時のLEDエフェクトの左右のずれをなくす（本人報告）。USBを挿していない
+    // 側は遅れて動き出すため、左右でエフェクトの始まりがずれたままになっていた。左右の
+    // 情報交換が終わった時点で同じモードをかけ直すと、既存のRGBLIGHTの同期で両側が
+    // 同時にエフェクトを始め直す（Web UIでLEDを変えた時と同じ動き）。
+    if (rgblight_is_enabled()) {
+        rgblight_mode_noeeprom(rgblight_get_mode());
+    }
+#    endif
 }
 
 static void rpc_get_motion_handler(uint8_t in_buflen, const void *in_data, uint8_t out_buflen, void *out_data) {
