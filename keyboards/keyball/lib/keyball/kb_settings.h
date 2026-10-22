@@ -107,3 +107,28 @@ void    kb_gesture_th_h_set(uint8_t v);
 uint8_t kb_gesture_th_v_get(void);
 void    kb_gesture_th_v_set(uint8_t v);
 #endif
+
+// ── キーマップの左右の並びの移行（2026-10-22、AVR版の左右判定の根本修正）──────────
+// 以前の版はQMKの仕様変更（#22775）の影響で基板の左右判定が物理と逆になっており、保存済み
+// キーマップは「前半の行＝物理的な右手」の並びだった。config.hのSPLIT_HAND_MATRIX_GRID_LOW_IS_LEFTで
+// 判定を物理と一致させたため、更新後の初回起動で、その基板のEEPROMに保存されているキーマップの
+// 前半の行と後半の行を入れ替える（左右の基板それぞれが自分のEEPROMに対して行う）。
+// 容量に余裕がないため、1キーずつ入れ替える（退避は2キー分の4バイトで済む）。
+// 途中で電源が抜けても壊れないよう、目印はすべて1バイト（書き込みが途中で切れない単位）にしている。
+//   +0 状態（DONE=新しい並び・移行済み / MIGRATING=移行の途中 / それ以外=旧い並び）
+//   +1 入れ替え済みのキーの数
+//   +2 退避場所に写してあるキーの番号（+1と同じなら、そのキーは退避済みで書き戻しの途中）
+//   +4〜+7 退避場所（入れ替える2キー分）
+// 途中で電源が抜けても、退避した元の値から書き直すので、2回入れ替わったり壊れたりしない。
+// EEPROMを初期化した時（初回書き込み・正規ファームからの乗り換え）は、初期キーマップが最初から
+// 新しい並びなのでDONEにするだけで入れ替えない。RP2040版（keyball-rp2040-firmware）と同じ考え方。
+#ifdef KB_EEPROM_LAYOUT_KEYBALL61
+#define KB_ROW_ORDER_EEPROM 0x03F6  // 0x03F6-0x03FD（マジックナンバー0x03F4-0x03F5の後ろの空き）
+#else
+#define KB_ROW_ORDER_EEPROM 0x03E4  // 0x03E4-0x03EB（ジェスチャーしきい値0x03E3の後ろの空き）
+#endif
+#define KB_ROW_ORDER_DONE      0xA5
+#define KB_ROW_ORDER_MIGRATING 0x5A
+
+// 起動時に一度呼ぶ（keyboard_post_init_user）。旧い並びなら入れ替える。
+void kb_row_order_migrate(void);

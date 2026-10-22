@@ -304,8 +304,10 @@ report_mouse_t pointing_device_driver_get_report(report_mouse_t rep) {
     // report mouse event, if keyboard is primary.
     if (is_keyboard_master() && should_report()) {
         // modify mouse report by PMW3360 motion.
-        motion_to_mouse(&keyball.this_motion, &rep, is_keyboard_left(), keyball.scroll_mode);
-        motion_to_mouse(&keyball.that_motion, &rep, !is_keyboard_left(), keyball.scroll_mode ^ keyball.this_have_ball);
+        // ボールの向きの補正（符号の反転）は物理的な右手の基板で行う。以前の版で「左」と判定されて
+        // いた側。左右判定を物理と一致させた（LOW_IS_LEFT、2026-10-22）後も、向きを変えないため。
+        motion_to_mouse(&keyball.this_motion, &rep, !is_keyboard_left(), keyball.scroll_mode);
+        motion_to_mouse(&keyball.that_motion, &rep, is_keyboard_left(), keyball.scroll_mode ^ keyball.this_have_ball);
         // store mouse report for OLED.
         keyball.last_mouse = rep;
     }
