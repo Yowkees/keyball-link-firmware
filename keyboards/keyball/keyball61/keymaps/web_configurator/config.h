@@ -32,6 +32,9 @@
 
 // 使用するRGBLIGHTエフェクトのみ有効化（フラッシュ節約）
 #define RGBLIGHT_EFFECT_BREATHING
+// ブリージングの明るさ表を256段階→128段階に（2026-10-22）。Keyball61のLED版は容量がいっぱいで、
+// 左右判定の修正（キーマップの自動移行）を入れると収まらなかったため。128段階でも見た目は滑らか。
+#define RGBLIGHT_BREATHE_TABLE_SIZE 128
 #define RGBLIGHT_EFFECT_RAINBOW_MOOD
 
 // RGBLIGHT デフォルト設定
@@ -52,4 +55,10 @@
 #undef RGBLED_SPLIT
 #ifdef RGBLIGHT_ENABLE
 #    define RGBLIGHT_SPLIT
+#endif
+
+// LEDなし版で起動時にLEDを消灯する時に送るLEDの数（keyball.c参照）。片側の基板の最大数より多めに
+// しておく（余った分の信号はLEDの先へ流れるだけで害はない）。
+#if !defined(RGBLIGHT_ENABLE) && !defined(RGB_MATRIX_ENABLE) && !defined(WS2812_LED_COUNT)
+#    define WS2812_LED_COUNT 40
 #endif

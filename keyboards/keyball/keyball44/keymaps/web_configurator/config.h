@@ -53,3 +53,9 @@
 #ifdef RGBLIGHT_ENABLE
 #    define RGBLIGHT_SPLIT
 #endif
+
+// LEDなし版で起動時にLEDを消灯する時に送るLEDの数（keyball.c参照）。片側の基板の最大数より多めに
+// しておく（余った分の信号はLEDの先へ流れるだけで害はない）。
+#if !defined(RGBLIGHT_ENABLE) && !defined(RGB_MATRIX_ENABLE) && !defined(WS2812_LED_COUNT)
+#    define WS2812_LED_COUNT 40
+#endif

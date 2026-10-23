@@ -3,6 +3,7 @@
 
 #include "kb_settings.h"
 #include "eeprom.h"
+#include "matrix.h"
 #include <stdbool.h>
 #include <string.h>
 
@@ -171,3 +172,49 @@ void kb_gesture_th_v_set(uint8_t v) {
     eeprom_write_byte((uint8_t *)(uintptr_t)KB_GESTURE_TH_V_EEPROM, g_gesture_th_v);
 }
 #endif
+
+// ── キーマップの左右の並びの移行（kb_settings.h末尾の説明を参照）─────────────────
+#define KB_RO_STATE   ((uint8_t *)(uintptr_t)(KB_ROW_ORDER_EEPROM))
+#define KB_RO_DONE    ((uint8_t *)(uintptr_t)(KB_ROW_ORDER_EEPROM + 1))
+#define KB_RO_SAVED   ((uint8_t *)(uintptr_t)(KB_ROW_ORDER_EEPROM + 2))
+#define KB_RO_SCRATCH ((uint16_t *)(uintptr_t)(KB_ROW_ORDER_EEPROM + 4))
+#define KB_KEYMAP_EEPROM_ADDR 37
+
+// QMKがEEPROMを初期化した直後（初期キーマップを書いた後）に呼ばれる。初期キーマップは
+// 最初から新しい並びなので、移行済みの印だけ書く。
+void eeconfig_init_user(void) {
+    eeprom_update_byte(KB_RO_STATE, KB_ROW_ORDER_DONE);
+}
+
+void kb_row_order_migrate(void) {
+    uint8_t state = eeprom_read_byte(KB_RO_STATE);
+    if (state == KB_ROW_ORDER_DONE) return;
+    if (state != KB_ROW_ORDER_MIGRATING) {
+        // 進み具合を初期化してから「途中」の印を書く（逆順だと古い進み具合を信じてしまう）
+        eeprom_update_byte(KB_RO_DONE, 0);
+        eeprom_update_byte(KB_RO_SAVED, 0xFF);
+        eeprom_update_byte(KB_RO_STATE, KB_ROW_ORDER_MIGRATING);
+    }
+    // 容量に余裕がないため、QMKのdynamic_keymap関数を使わずEEPROMを直接読み書きする。キーマップは
+    // KB_KEYMAP_EEPROM_ADDR番地から、レイヤー→行→列の順に1キー2バイトで並んでいる（QMKの
+    // nvm_dynamic_keymap.c。37番地はVIA無効時の値で、Keyball61の末尾0x02A5番地とも一致）。
+    // 2バイトをまとめて入れ替えるので、上位・下位の並び順は気にしなくてよい。
+    const uint8_t span = (MATRIX_ROWS / 2) * MATRIX_COLS;  // 半分（片手）の行のキー数
+    const uint8_t keys = DYNAMIC_KEYMAP_LAYER_COUNT * span;  // 最大160（Keyball61）
+    uint8_t       k;
+    while ((k = eeprom_read_byte(KB_RO_DONE)) < keys) {
+        uint16_t *a = (uint16_t *)(uintptr_t)KB_KEYMAP_EEPROM_ADDR + k + (uint16_t)(k / span) * span;  // 前半の行のキー
+        uint16_t *b = a + span;                                                                       // 同じ位置の後半の行のキー
+        if (eeprom_read_byte(KB_RO_SAVED) != k) {
+            // 段階1: 2キーとも退避場所へ写してから、退避済みの印を書く
+            eeprom_update_word(KB_RO_SCRATCH, eeprom_read_word(a));
+            eeprom_update_word(KB_RO_SCRATCH + 1, eeprom_read_word(b));
+            eeprom_update_byte(KB_RO_SAVED, k);
+        }
+        // 段階2: 退避場所の値から入れ替えて書き戻す（何度やり直しても同じ結果になる）
+        eeprom_update_word(a, eeprom_read_word(KB_RO_SCRATCH + 1));
+        eeprom_update_word(b, eeprom_read_word(KB_RO_SCRATCH));
+        eeprom_update_byte(KB_RO_DONE, k + 1);
+    }
+    eeprom_update_byte(KB_RO_STATE, KB_ROW_ORDER_DONE);
+}

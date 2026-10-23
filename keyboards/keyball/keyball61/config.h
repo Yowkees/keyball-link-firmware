@@ -29,6 +29,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Split parameters
 #define SOFT_SERIAL_PIN         D2
 #define SPLIT_HAND_MATRIX_GRID  F7, D7
+// 左手判定ジャンパー（物理的な左手の基板に付ける）で交差点が短絡した基板を「左」と判定する
+// （2026-10-22）。QMK 2024年の仕様変更#22775で既定が「短絡=右」に変わり、以前の版は物理的な
+// 左右と逆に判定されていた。保存済みキーマップはkb_row_order_migrate()で自動移行する。
+#define SPLIT_HAND_MATRIX_GRID_LOW_IS_LEFT
 #define SPLIT_USB_DETECT
 #ifdef OLED_ENABLE
 #    define SPLIT_OLED_ENABLE

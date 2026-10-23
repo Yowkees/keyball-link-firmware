@@ -21,6 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include "keyball.h"
+#if !defined(RGBLIGHT_ENABLE) && !defined(RGB_MATRIX_ENABLE) && defined(KB_LED_CLEAR_ON_BOOT)
+#    include "ws2812.h"
+#endif
 #include "drivers/pmw3360/pmw3360.h"
 
 #include <string.h>
@@ -146,6 +149,19 @@ static void add_scroll_div(int8_t delta) {
 #if KEYBALL_MODEL == 46
 void keyboard_pre_init_kb(void) {
     keyball.this_have_ball = pmw3360_init();
+    keyboard_pre_init_user();
+}
+#endif
+
+#if KEYBALL_MODEL != 46 && !defined(RGBLIGHT_ENABLE) && !defined(RGB_MATRIX_ENABLE) && defined(KB_LED_CLEAR_ON_BOOT)
+// LEDなし版: LEDには何も送らないため、電源を入れた時にLEDの部品がでたらめな色で点いたり、
+// 信号線の雑音を色の指示と読み取ったりすると、その色のまま光り続けていた（2026-10-23、本人報告。
+// ボール無し側の数個が赤・青に点灯）。起動処理のできるだけ早い段階（USBの確認の待ち時間より前）で
+// 一度だけ全部消灯の指示を送り、その後は信号線をLowのまま保つ（ws2812_init()が出力・Lowにする）。
+void keyboard_pre_init_kb(void) {
+    ws2812_init();
+    ws2812_set_color_all(0, 0, 0);
+    ws2812_flush();
     keyboard_pre_init_user();
 }
 #endif
@@ -304,8 +320,10 @@ report_mouse_t pointing_device_driver_get_report(report_mouse_t rep) {
     // report mouse event, if keyboard is primary.
     if (is_keyboard_master() && should_report()) {
         // modify mouse report by PMW3360 motion.
-        motion_to_mouse(&keyball.this_motion, &rep, is_keyboard_left(), keyball.scroll_mode);
-        motion_to_mouse(&keyball.that_motion, &rep, !is_keyboard_left(), keyball.scroll_mode ^ keyball.this_have_ball);
+        // ボールの向きの補正（符号の反転）は物理的な右手の基板で行う。以前の版で「左」と判定されて
+        // いた側。左右判定を物理と一致させた（LOW_IS_LEFT、2026-10-22）後も、向きを変えないため。
+        motion_to_mouse(&keyball.this_motion, &rep, !is_keyboard_left(), keyball.scroll_mode);
+        motion_to_mouse(&keyball.that_motion, &rep, is_keyboard_left(), keyball.scroll_mode ^ keyball.this_have_ball);
         // store mouse report for OLED.
         keyball.last_mouse = rep;
     }
