@@ -22,6 +22,9 @@ ifeq ($(strip $(LED_VERSION)),yes)
     OPT_DEFS += -DLED_VERSION_BUILD
 else
     RGBLIGHT_ENABLE = no
+    # LEDなし版でも、起動時にLEDを全部消灯するためだけにLEDの信号を送る部品を入れる（keyball.c参照）
+    WS2812_DRIVER_REQUIRED = yes
+    OPT_DEFS += -DKB_LED_CLEAR_ON_BOOT
     EXTRAKEY_ENABLE = yes
     OPT_DEFS += -DGESTURE_ENABLE
 endif

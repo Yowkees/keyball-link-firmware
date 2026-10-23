@@ -21,6 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include "keyball.h"
+#if !defined(RGBLIGHT_ENABLE) && !defined(RGB_MATRIX_ENABLE) && defined(KB_LED_CLEAR_ON_BOOT)
+#    include "ws2812.h"
+#endif
 #include "drivers/pmw3360/pmw3360.h"
 
 #include <string.h>
@@ -614,11 +617,14 @@ void keyball_set_accel(uint8_t accel) {
 // Keyboard hooks
 
 void keyboard_post_init_kb(void) {
-#if !defined(RGBLIGHT_ENABLE) && !defined(RGB_MATRIX_ENABLE) && defined(WS2812_DI_PIN)
-    // LEDなし版: LEDの信号線を何もつながっていない状態（浮いた状態）のままにすると、雑音を
-    // LEDが色の指示と読み取って、勝手に光ることがある（2026-10-23、本人報告）。Lowに固定しておく。
-    gpio_set_pin_output(WS2812_DI_PIN);
-    gpio_write_pin_low(WS2812_DI_PIN);
+#if !defined(RGBLIGHT_ENABLE) && !defined(RGB_MATRIX_ENABLE) && defined(KB_LED_CLEAR_ON_BOOT)
+    // LEDなし版: LEDには何も送らないため、電源を入れた時にLEDの部品がでたらめな色で点いたり、
+    // 信号線の雑音を色の指示と読み取ったりすると、その色のまま光り続けていた（2026-10-23、本人報告。
+    // ボール無し側の数個が赤・青に点灯）。起動時に一度だけ全部消灯の指示を送り、その後は信号線を
+    // Lowのまま保つ（ws2812_init()が出力・Lowにする）。
+    ws2812_init();
+    ws2812_set_color_all(0, 0, 0);
+    ws2812_flush();
 #endif
 #if defined(WS2812_DI_PIN) && !defined(RGBLIGHT_ENABLE) && !defined(RGB_MATRIX_ENABLE)
     // LED無効ビルドではWS2812を駆動するコードが含まれずデータ線がフローティングのままになり、
