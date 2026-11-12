@@ -338,13 +338,18 @@ report_mouse_t pointing_device_driver_get_report(report_mouse_t rep) {
 // 子の見張り（2026-11-06）。ケーブルを挿したままPCを起動すると、PCがUSBの通信を始める前に
 // 親子判定の2秒待ち（SPLIT_USB_DETECT）が終わり、ケーブル側まで「子」と判定されて、PCに
 // 認識されないままになっていた（挿し直すまで直らない）。子になったのに、起動から
-// KEYBALL_SLAVE_WATCHDOG_MS経っても親からの最初の問い合わせ（KEYBALL_GET_INFO）が来ない時は、
-// 親がいない＝判定を間違えたとみなして再起動し、判定し直す。QMK標準のSPLIT_WATCHDOG_ENABLEと
-// 同じ働きだが、左右間の通信を新しく増やさず、AVR版の容量にも収まるよう既存の問い合わせを使う。
+// KEYBALL_SLAVE_WATCHDOG_MS経っても親が見つからない時は、親がいない＝判定を間違えたと
+// みなして再起動し、判定し直す。QMK標準のSPLIT_WATCHDOG_ENABLEと同じ働きだが、左右間の
+// 通信を新しく増やさず、AVR版の容量にも収まるよう、既存の通信を目印にする。
+// 2026-11-12: 目印を2つにした。①親からの最初の問い合わせ（KEYBALL_GET_INFO）、②親が0.1秒おきに
+// 送ってくる時計合わせ（QMK標準。届くとsync_timer_msが0以外になる）。①だけだと、親は最初の
+// 問い合わせが通ると二度と送らないため、使用中に子だけが再起動すると親を見つけられず、
+// 再起動を繰り返してしまう。②は使用中もずっと届く。
 #ifndef KEYBALL_SLAVE_WATCHDOG_MS
 #    define KEYBALL_SLAVE_WATCHDOG_MS 4000
 #endif
 static bool keyball_master_seen = false;
+extern volatile int32_t sync_timer_ms;  // quantum/sync_timer.c（子では親の時計とのずれ。届く前は0）
 
 static void rpc_get_info_handler(uint8_t in_buflen, const void *in_data, uint8_t out_buflen, void *out_data) {
     keyball_master_seen = true;
@@ -702,7 +707,7 @@ void housekeeping_task_kb(void) {
             rpc_get_motion_invoke();
             rpc_set_cpi_invoke();
         }
-    } else if (!keyball_master_seen && timer_read() > KEYBALL_SLAVE_WATCHDOG_MS) {
+    } else if (!keyball_master_seen && sync_timer_ms == 0 && timer_read() > KEYBALL_SLAVE_WATCHDOG_MS) {
         mcu_reset();  // 子の見張り（上のKEYBALL_SLAVE_WATCHDOG_MSの説明を参照）
     }
 }
