@@ -335,19 +335,7 @@ report_mouse_t pointing_device_driver_get_report(report_mouse_t rep) {
 
 #ifdef SPLIT_KEYBOARD
 
-// 子の見張り（2026-11-06）。ケーブルを挿したままPCを起動すると、PCがUSBの通信を始める前に
-// 親子判定の2秒待ち（SPLIT_USB_DETECT）が終わり、ケーブル側まで「子」と判定されて、PCに
-// 認識されないままになっていた（挿し直すまで直らない）。子になったのに、起動から
-// KEYBALL_SLAVE_WATCHDOG_MS経っても親からの最初の問い合わせ（KEYBALL_GET_INFO）が来ない時は、
-// 親がいない＝判定を間違えたとみなして再起動し、判定し直す。QMK標準のSPLIT_WATCHDOG_ENABLEと
-// 同じ働きだが、左右間の通信を新しく増やさず、AVR版の容量にも収まるよう既存の問い合わせを使う。
-#ifndef KEYBALL_SLAVE_WATCHDOG_MS
-#    define KEYBALL_SLAVE_WATCHDOG_MS 4000
-#endif
-static bool keyball_master_seen = false;
-
 static void rpc_get_info_handler(uint8_t in_buflen, const void *in_data, uint8_t out_buflen, void *out_data) {
-    keyball_master_seen = true;
     keyball_info_t info = {
         .ballcnt = keyball.this_have_ball ? 1 : 0,
     };
@@ -702,8 +690,6 @@ void housekeeping_task_kb(void) {
             rpc_get_motion_invoke();
             rpc_set_cpi_invoke();
         }
-    } else if (!keyball_master_seen && timer_read() > KEYBALL_SLAVE_WATCHDOG_MS) {
-        mcu_reset();  // 子の見張り（上のKEYBALL_SLAVE_WATCHDOG_MSの説明を参照）
     }
 }
 #endif
