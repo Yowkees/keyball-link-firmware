@@ -34,9 +34,7 @@
 #define RGBLIGHT_EFFECT_BREATHING
 // ブリージングの明るさ表を256段階→128段階に（2026-10-22）。Keyball61のLED版は容量がいっぱいで、
 // 左右判定の修正（キーマップの自動移行）を入れると収まらなかったため。128段階でも見た目は滑らか。
-// 2026-11-12: さらに64段階に。子の見張りを入れると容量ちょうど100%になり、その版で子側が動かない
-// 不具合が出たため（原因は未確定。容量に余裕を持たせる）。明るさの上限120なので1段あたり約2で目立たない。
-#define RGBLIGHT_BREATHE_TABLE_SIZE 64
+#define RGBLIGHT_BREATHE_TABLE_SIZE 128
 #define RGBLIGHT_EFFECT_RAINBOW_MOOD
 
 // RGBLIGHT デフォルト設定
