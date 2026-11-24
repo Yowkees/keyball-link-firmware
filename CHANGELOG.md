@@ -4,6 +4,8 @@ Keyball Link ファームウェアの変更履歴です。バージョンは [Se
 Web版（keyball-link）とはバージョン番号は連動していません。Web版の変更履歴は [keyball-link](https://github.com/Yowkees/keyball-link/blob/main/CHANGELOG.md) を参照してください。
 
 ## [Unreleased]
+### Fixed
+- KB SAVE（KBC_SAVE）で保存したトラックボール設定が、電源を入れ直すと初期値に戻っていた不具合を修正。保存時に設定の目印（magic）を書いておらず、起動時に壊れた設定と判定されていた。Keyball Linkの画面からの保存は元から正常
 
 ## [1.5.6] - 2026-11-18
 ### Changed

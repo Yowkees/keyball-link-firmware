@@ -786,6 +786,10 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                     .ssnap = keyball_get_scrollsnap_mode(),
 #endif
                     .accel = keyball_accel_value,
+                    // 目印(magic)も必ず書く。以前は書いておらず0のまま保存されていたため、
+                    // 次の起動時に「目印不一致＝壊れた設定」と判定されて初期値に戻っていた
+                    // （2026-11-24、問い合わせ「CPI+で上げてKB SAVEしても電源を切ると戻る」）
+                    .magic = KEYBALL_CONFIG_MAGIC,
                 };
                 eeconfig_update_kb(c.raw);
             } break;
